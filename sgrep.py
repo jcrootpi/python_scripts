@@ -7,7 +7,6 @@ import sys
 import os
 import argparse
 import random
-import rootparse
 import root_getopt
 import re
 import csv
@@ -130,7 +129,7 @@ else:
     args.header *= -1
 
 if args.threshold is None:  # combined with grouping, threshold match count
-    threshold = 0
+    threshold = 0  # default is no threshold
 else:
     threshold = int(args.threshold)
 
@@ -144,8 +143,6 @@ else:
 
 if args.filename:
   outfile = open(args.filename,'w')
-
-ep = sys.stderr.write  # cause Google dinged you if code width was over 84 chars.
 
 #  ********* Process Header.  Add additional fields as needed *******
 size = 0
@@ -213,7 +210,7 @@ reading = True
 while reading:
   try:
     inline = infile.next() 
-  except:  # end of input; check group grep criteria
+  except:  # end of input; check group grep criteria to print out last grouping
     reading = False
     if gfield:
       grouping = "DONE"
@@ -247,7 +244,7 @@ while reading:
       continue
     flist = line.split(delimiter)
 
-  # ****** grouped grepping on lines grouped by alternate field(s) ***********
+  # ****** grouped grepping on lines grouped by field(s) ***********
   if gfield:
     grouping = ''
     for e in gfield:
@@ -305,8 +302,9 @@ while reading:
 
 
   # *** qualifier takes a qualifier data structure, compares it to the line of data in array form.  Last value is 'quick' check, (TRUE) or exhaustve check (FALSE)
-  # *** Returns boolean 'c', and bitfield of which of qualifiers matched; use FALSE to use bitfield
-  # *** Structure: [ ['AND/OR', '#-of-qualifiers'], Qualifier1, Qualifier2 ...]
+  # *** Returns boolean 'c', and bitfield of which qualifiers matched; 
+  # *** use FALSE exhaustively check each qualifier to use bitfield
+  # *** Structure: [ ['AND/OR', '#-of-qualifiers'], Qualifier1, Qualifier2, Qualifier3 ...]
   # *** Each Qualifier is truple:  ( [Index], 'Value', 'Comparator' )
   #        Value can be string, numeric or dict of strings
   #        Comparators are:   '' = exact match
@@ -315,7 +313,7 @@ while reading:
   #                         =~/!~ = regex compare
 
   if (args.color == 1 and qualifier[0][0]== 'OR') or args.booleanII:  # If we want to highlight OR fields, must do this... 
-    bitfield,c =  rootparse.qualifier(qualifier,flist,False)
+    bitfield,c =  root_getopt.qualifier(qualifier,flist,False)
   else:
     bitfield,c =  root_getopt.qualifier(qualifier,flist,True)
 
